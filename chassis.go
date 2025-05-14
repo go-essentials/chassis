@@ -33,7 +33,10 @@ import (
 
 // Run executes app based on its configuration and writes output to w.
 func (app Application) Run(w io.Writer) {
+	app.Commands.sort()
+
 	app.writeHeader(w)
+	app.writeCommands(w)
 }
 
 // Write to w the data of app.
@@ -59,4 +62,26 @@ func (app Application) writeHeader(w io.Writer) {
 		fmt.Fprintf(w, "  Version: %s\n", app.Version)
 		fmt.Fprintf(w, "\n")
 	}
+}
+
+// Write to w the commands of app.
+func (app Application) writeCommands(w io.Writer) {
+	if len(app.Commands) == 0 {
+		return
+	}
+
+	commandNameMaxLen := 0
+
+	for _, cmd := range app.Commands {
+		if len(cmd.Name) > commandNameMaxLen {
+			commandNameMaxLen = len(cmd.Name)
+		}
+	}
+
+	fmt.Fprintf(w, "Commands:\n")
+	for _, cmd := range app.Commands {
+		fmt.Fprintf(w, "  %-*s    %s\n", commandNameMaxLen, cmd.Name, cmd.Description)
+	}
+
+	fmt.Fprintf(w, "\n")
 }

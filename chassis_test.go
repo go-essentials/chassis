@@ -83,6 +83,21 @@ func TestRun(t *testing.T) {
 			},
 			want: "Chassis\n\n  Version: 1.0.0\n\n",
 		},
+		"The commands and printed (and sorted) when they are defined.": {
+			app: chassis.Application{
+				Commands: []chassis.Command{
+					{
+						Name:        "version",
+						Description: "Prints version information and quits.",
+					},
+					{
+						Name:        "clean-temp",
+						Description: "Clean the temporary folder.",
+					},
+				},
+			},
+			want: "Commands:\n  clean-temp    Clean the temporary folder.\n  version       Prints version information and quits.\n\n",
+		},
 	} {
 		tc := tc // Rebind 'tc'. Note: This is required to support "parallel" execution.
 

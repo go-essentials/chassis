@@ -26,22 +26,15 @@
 // Package chassis implements a framework for building CLI applications.
 package chassis
 
-import "io"
+import "slices"
 
-// Application represents a "chassis" application.
-type Application struct {
-	Logo        string     // ASCII Logo or visual identifier.
-	Name        string     // Application's name.
-	Description string     // Application's description.
-	Version     string     // Application's version.
-	Author      string     // Author name or contact information.
-	Commands    CommandSet // Set of commands available for the application.
-}
+// Sorts the elements in set by their name.
+func (set CommandSet) sort() {
+	slices.SortFunc(set, func(a, b Command) int {
+		if a.Name < b.Name {
+			return -1
+		}
 
-// Command represents a single Application command.
-type Command struct {
-	Name        string          // Name (identifier) used to specify this command on the CLI.
-	Description string          // Short description about this command.
-	Handler     func(io.Writer) // Function to execute when the command is specified on the CLI.
-	IsDefault   bool            // Flag indicating if this command is the default one.
+		return 1
+	})
 }
