@@ -39,64 +39,56 @@ func TestRun(t *testing.T) {
 	t.Parallel() // Enable parallel execution.
 
 	for tcName, tc := range map[string]struct {
-		app  chassis.Application
-		want string
+		logo, name, description, version, author string
+		commands                                 []chassis.Command
+		want                                     string
 	}{
 		"Nothing is printed when the `Application` is empty.": {
-			app:  chassis.Application{},
 			want: "",
 		},
 		"The logo is printed when it's defined.": {
-			app: chassis.Application{
-				Logo: "Chassis",
-			},
+			logo: "Chassis",
 			want: "Chassis\n\n",
 		},
 		"The logo and the description are printed when they are defined.": {
-			app: chassis.Application{
-				Logo:        "Chassis",
-				Description: "A framework for building CLI applications.",
-			},
-			want: "Chassis\n\n  A framework for building CLI applications.\n\n",
+			logo:        "Chassis",
+			description: "A framework for building CLI applications.",
+			want:        "Chassis\n\n  A framework for building CLI applications.\n\n",
 		},
 		"The logo, the description and the author are printed when they are defined.": {
-			app: chassis.Application{
-				Logo:        "Chassis",
-				Description: "A framework for building CLI applications.",
-				Author:      "Kevin De Coninck <kevin.dconinck@gmail.com>",
-			},
-			want: "Chassis\n\n  A framework for building CLI applications.\n  Author: Kevin De Coninck <kevin.dconinck@gmail.com>\n\n",
+			logo:        "Chassis",
+			description: "A framework for building CLI applications.",
+			author:      "Kevin De Coninck <kevin.dconinck@gmail.com>",
+			want:        "Chassis\n\n  A framework for building CLI applications.\n  Author: Kevin De Coninck <kevin.dconinck@gmail.com>\n\n",
 		},
 		"The logo, the description, the author and the version are printed when they are defined.": {
-			app: chassis.Application{
-				Logo:        "Chassis",
-				Description: "A framework for building CLI applications.",
-				Version:     "1.0.0",
-				Author:      "Kevin De Coninck <kevin.dconinck@gmail.com>",
-			},
-			want: "Chassis\n\n  A framework for building CLI applications.\n  Author: Kevin De Coninck <kevin.dconinck@gmail.com>\n\n  Version: 1.0.0\n\n",
+			logo:        "Chassis",
+			description: "A framework for building CLI applications.",
+			version:     "1.0.0",
+			author:      "Kevin De Coninck <kevin.dconinck@gmail.com>",
+			want:        "Chassis\n\n  A framework for building CLI applications.\n  Author: Kevin De Coninck <kevin.dconinck@gmail.com>\n\n  Version: 1.0.0\n\n",
 		},
 		"The logo and the version are printed when they are defined.": {
-			app: chassis.Application{
-				Logo:    "Chassis",
-				Version: "1.0.0",
-			},
-			want: "Chassis\n\n  Version: 1.0.0\n\n",
+			logo:    "Chassis",
+			version: "1.0.0",
+			want:    "Chassis\n\n  Version: 1.0.0\n\n",
 		},
 		"The commands and printed (and sorted) when they are defined.": {
-			app: chassis.Application{
-				Commands: []chassis.Command{
-					{
-						Name:        "version",
-						Description: "Prints version information and quits.",
-					},
-					{
-						Name:        "clean-temp",
-						Description: "Clean the temporary folder.",
-					},
+			commands: []chassis.Command{
+				{
+					Name:        "version",
+					Description: "Prints version information and quits.",
+				},
+				{
+					Name:        "bulk",
+					Description: "Perform a bulk operation.",
+				},
+				{
+					Name:        "clean-temp",
+					Description: "Clean the temporary folder.",
 				},
 			},
-			want: "Commands:\n  clean-temp    Clean the temporary folder.\n  version       Prints version information and quits.\n\n",
+			want: "Commands:\n  bulk          Perform a bulk operation.\n  clean-temp    Clean the temporary folder.\n  version       Prints version information and quits.\n\n",
 		},
 	} {
 		tc := tc // Rebind 'tc'. Note: This is required to support "parallel" execution.
@@ -107,9 +99,10 @@ func TestRun(t *testing.T) {
 
 			// ARRANGE.
 			var buf bytes.Buffer
+			app := chassis.New(tc.logo, tc.name, tc.description, tc.version, tc.author, tc.commands)
 
 			// ACT.
-			tc.app.Run(&buf)
+			app.Run(&buf)
 
 			// ASSERT.
 			assert.Equal(t, buf.String(), tc.want, "", "\n\n"+

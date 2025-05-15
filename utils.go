@@ -29,7 +29,7 @@ package chassis
 import "slices"
 
 // Sorts the elements in set by their name.
-func (set CommandSet) sort() {
+func (set CommandSet) sort() CommandSet {
 	slices.SortFunc(set, func(a, b Command) int {
 		if a.Name < b.Name {
 			return -1
@@ -37,4 +37,19 @@ func (set CommandSet) sort() {
 
 		return 1
 	})
+
+	return set
+}
+
+// Returns the length of the largest name of all elements in set.
+func (set CommandSet) getMaxNameLen() int {
+	commandNameMaxLen := 0
+
+	for _, cmd := range set {
+		if len(cmd.Name) > commandNameMaxLen {
+			commandNameMaxLen = len(cmd.Name)
+		}
+	}
+
+	return commandNameMaxLen
 }

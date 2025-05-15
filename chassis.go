@@ -31,55 +31,72 @@ import (
 	"io"
 )
 
-// Run executes app based on its configuration and writes output to w.
-func (app Application) Run(w io.Writer) {
-	app.Commands.sort()
+// App is the API for a "chassis" application.
+type App interface {
+	// Run the "chassis" application and write output to w.
+	Run(w io.Writer)
+}
 
+// New returns a new App with the given logo, name, description, version, author and commands.
+func New(logo, name, description, version, author string, commands CommandSet) App {
+	return application{
+		logo:              logo,
+		name:              name,
+		description:       description,
+		version:           version,
+		author:            author,
+		commands:          commands.sort(),
+		commandNameMaxLen: commands.getMaxNameLen(),
+	}
+}
+
+// Run executes app based on its configuration and writes output to w.
+func (app application) Run(w io.Writer) {
 	app.writeHeader(w)
 	app.writeCommands(w)
 }
 
 // Write to w the data of app.
-func (app Application) writeHeader(w io.Writer) {
-	if app.Logo != "" {
-		fmt.Fprintf(w, "%s\n", app.Logo)
+func (app application) writeHeader(w io.Writer) {
+	if app.logo != "" {
+		fmt.Fprintf(w, "%s\n", app.logo)
 		fmt.Fprintf(w, "\n")
 	}
 
-	if app.Description != "" {
-		fmt.Fprintf(w, "  %s\n", app.Description)
+	if app.description != "" {
+		fmt.Fprintf(w, "  %s\n", app.description)
 	}
 
-	if app.Author != "" {
-		fmt.Fprintf(w, "  Author: %s\n", app.Author)
+	if app.author != "" {
+		fmt.Fprintf(w, "  Author: %s\n", app.author)
 	}
 
-	if app.Description != "" || app.Author != "" {
+	if app.description != "" || app.author != "" {
 		fmt.Fprintf(w, "\n")
 	}
 
-	if app.Version != "" {
-		fmt.Fprintf(w, "  Version: %s\n", app.Version)
+	if app.version != "" {
+		fmt.Fprintf(w, "  Version: %s\n", app.version)
 		fmt.Fprintf(w, "\n")
 	}
 }
 
 // Write to w the commands of app.
-func (app Application) writeCommands(w io.Writer) {
-	if len(app.Commands) == 0 {
+func (app application) writeCommands(w io.Writer) {
+	if len(app.commands) == 0 {
 		return
 	}
 
 	commandNameMaxLen := 0
 
-	for _, cmd := range app.Commands {
+	for _, cmd := range app.commands {
 		if len(cmd.Name) > commandNameMaxLen {
 			commandNameMaxLen = len(cmd.Name)
 		}
 	}
 
 	fmt.Fprintf(w, "Commands:\n")
-	for _, cmd := range app.Commands {
+	for _, cmd := range app.commands {
 		fmt.Fprintf(w, "  %-*s    %s\n", commandNameMaxLen, cmd.Name, cmd.Description)
 	}
 

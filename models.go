@@ -28,14 +28,17 @@ package chassis
 
 import "io"
 
-// Application represents a "chassis" application.
-type Application struct {
-	Logo        string     // ASCII Logo or visual identifier.
-	Name        string     // Application's name.
-	Description string     // Application's description.
-	Version     string     // Application's version.
-	Author      string     // Author name or contact information.
-	Commands    CommandSet // Set of commands available for the application.
+// Represents a "chassis" application.
+type application struct {
+	logo        string     // ASCII Logo or visual identifier.
+	name        string     // Application's name.
+	description string     // Application's description.
+	version     string     // Application's version.
+	author      string     // Author name or contact information.
+	commands    CommandSet // Set of commands available for the application.
+
+	// Section: "Internal" fields.
+	commandNameMaxLen int // The largest length of the name of ALL commands.
 }
 
 // Command represents a single Application command.
