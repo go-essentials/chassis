@@ -34,7 +34,7 @@ import (
 // App is the API for a "chassis" application.
 type App interface {
 	// Run the "chassis" application and write output to w.
-	Run(w io.Writer)
+	Run(io.Writer)
 }
 
 // New returns a new App with the given logo, name, description, version, author and commands.
