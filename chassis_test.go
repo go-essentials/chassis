@@ -28,6 +28,7 @@ package chassis_test
 
 import (
 	"bytes"
+	"strings"
 	"testing"
 
 	"github.com/go-essentials/assert"
@@ -37,6 +38,11 @@ import (
 // QA: Verify that `Application.Run` is implemented correctly.
 func TestRun(t *testing.T) {
 	t.Parallel() // Enable parallel execution.
+
+	// UTILITY FUNCTIONS.
+	fmtOutput := func(output string) string {
+		return strings.Replace(output, "\n", "\n          ", -1)
+	}
 
 	for tcName, tc := range map[string]struct {
 		logo, name, description, version, author string
@@ -108,7 +114,7 @@ func TestRun(t *testing.T) {
 			assert.Equal(t, buf.String(), tc.want, "", "\n\n"+
 				"UT Name:  %s\n"+
 				"\033[32mExpected: %s\033[0m\n"+
-				"\033[31mActual:   %s\033[0m\n\n", tcName, tc.want, buf.String())
+				"\033[31mActual:   %s\033[0m\n\n", tcName, fmtOutput(tc.want), fmtOutput(buf.String()))
 		})
 	}
 }
