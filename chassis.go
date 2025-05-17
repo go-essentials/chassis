@@ -34,7 +34,7 @@ import (
 // App is the API for a "chassis" application.
 type App interface {
 	// Run the "chassis" application and write output to w.
-	Run(io.Writer)
+	Run(io.Writer, []string)
 }
 
 // New returns a new App with the given logo, name, description, version, author and commands.
@@ -46,12 +46,21 @@ func New(logo, name, description, version, author string, commands CommandSet) A
 		version:           version,
 		author:            author,
 		commands:          commands.sort(),
+		commandMap:        commands.asMap(),
 		commandNameMaxLen: commands.getMaxNameLen(),
 	}
 }
 
 // Run executes app based on its configuration and writes output to w.
-func (app application) Run(w io.Writer) {
+func (app application) Run(w io.Writer, args []string) {
+	for _, arg := range args {
+		if handler, ok := app.commandMap[arg]; ok {
+			handler(w)
+
+			return
+		}
+	}
+
 	app.writeHeader(w)
 	app.writeCommands(w)
 }

@@ -26,7 +26,10 @@
 // Package chassis implements a framework for building CLI applications.
 package chassis
 
-import "slices"
+import (
+	"io"
+	"slices"
+)
 
 // Sorts the elements in set by their name.
 func (set CommandSet) sort() CommandSet {
@@ -52,4 +55,16 @@ func (set CommandSet) getMaxNameLen() int {
 	}
 
 	return commandNameMaxLen
+}
+
+// Converts set into a map where the key matches the name of the command.
+// This increases the lookup speed.
+func (set CommandSet) asMap() map[string]func(io.Writer) {
+	cmdMap := make(map[string]func(io.Writer), len(set))
+
+	for _, cmd := range set {
+		cmdMap[cmd.Name] = cmd.Handler
+	}
+
+	return cmdMap
 }

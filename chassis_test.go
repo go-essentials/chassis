@@ -28,6 +28,8 @@ package chassis_test
 
 import (
 	"bytes"
+	"fmt"
+	"io"
 	"strings"
 	"testing"
 
@@ -47,6 +49,7 @@ func TestRun(t *testing.T) {
 	for tcName, tc := range map[string]struct {
 		logo, name, description, version, author string
 		commands                                 []chassis.Command
+		args                                     []string
 		want                                     string
 	}{
 		"Nothing is printed when the `Application` is empty.": {
@@ -96,6 +99,46 @@ func TestRun(t *testing.T) {
 			},
 			want: "Commands:\n  bulk          Perform a bulk operation.\n  clean-temp    Clean the temporary folder.\n  version       Prints version information and quits.\n\n",
 		},
+		"The handler is executed when the arguments maps to a valid command.": {
+			args: []string{"analyze"},
+			commands: []chassis.Command{
+				{
+					Name:        "analyze",
+					Description: "Perform an analysis.",
+					Handler: func(w io.Writer) {
+						fmt.Fprintf(w, "Analysis performed.")
+					},
+				},
+				{
+					Name:        "clean-temp",
+					Description: "Clean the temporary folder.",
+					Handler: func(w io.Writer) {
+						fmt.Fprintf(w, "Cleaned temporary folder.")
+					},
+				},
+			},
+			want: "Analysis performed.",
+		},
+		"The last handler is executed when the arguments maps to multiple valid commands.": {
+			args: []string{"analyze"},
+			commands: []chassis.Command{
+				{
+					Name:        "analyze",
+					Description: "Perform an analysis.",
+					Handler: func(w io.Writer) {
+						fmt.Fprintf(w, "Analysis performed.")
+					},
+				},
+				{
+					Name:        "analyze",
+					Description: "Perform an analysis.",
+					Handler: func(w io.Writer) {
+						fmt.Fprintf(w, "ALT. Analysis performed.")
+					},
+				},
+			},
+			want: "ALT. Analysis performed.",
+		},
 	} {
 		tc := tc // Rebind 'tc'. Note: This is required to support "parallel" execution.
 
@@ -108,7 +151,7 @@ func TestRun(t *testing.T) {
 			app := chassis.New(tc.logo, tc.name, tc.description, tc.version, tc.author, tc.commands)
 
 			// ACT.
-			app.Run(&buf)
+			app.Run(&buf, tc.args)
 
 			// ASSERT.
 			assert.Equal(t, buf.String(), tc.want, "", "\n\n"+
@@ -118,3 +161,44 @@ func TestRun(t *testing.T) {
 		})
 	}
 }
+
+// BENCHMARK: Measure the performance for looking up a command.
+func benchmarkLookup(b *testing.B, size int) {
+	// UTILITY FUNCTION: Populate some test data.
+	populateData := func(amount int) (chassis.CommandSet, []string) {
+		commandSet := make(chassis.CommandSet, amount)
+		argsSet := make([]string, amount)
+
+		for idx := range amount {
+			commandSet[idx] = chassis.Command{
+				Name: fmt.Sprint(idx),
+				Handler: func(w io.Writer) {
+					// NOTE: Intentionally left blank.
+				},
+			}
+
+			argsSet[idx] = fmt.Sprint(amount - idx - 1)
+		}
+
+		return commandSet, argsSet
+	}
+
+	// ARRANGE.
+	var buf bytes.Buffer
+
+	commandSet, argsSet := populateData(size)
+	app := chassis.New("", "", "", "", "", commandSet)
+
+	b.ResetTimer()
+
+	// RUN.
+	for b.Loop() {
+		app.Run(&buf, argsSet)
+	}
+}
+
+// BENCHMARK COLLECTION: Measure the performance for looking up a command.
+func BenchmarkLookup_Small(b *testing.B)  { benchmarkLookup(b, 10) }
+func BenchmarkLookup_Medium(b *testing.B) { benchmarkLookup(b, 1_000) }
+func BenchmarkLookup_Large(b *testing.B)  { benchmarkLookup(b, 10_000) }
+func BenchmarkLookup_XLarge(b *testing.B) { benchmarkLookup(b, 1_000_000) }
