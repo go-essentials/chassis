@@ -38,6 +38,7 @@ type application struct {
 	commands    CommandSet // Set of commands available for the application.
 
 	// Section: "Internal" fields.
+	commandMap        map[string]func(io.Writer)
 	commandNameMaxLen int // The largest length of the name of ALL commands.
 }
 
@@ -46,5 +47,4 @@ type Command struct {
 	Name        string          // Name (identifier) used to specify this command on the CLI.
 	Description string          // Short description about this command.
 	Handler     func(io.Writer) // Function to execute when the command is specified on the CLI.
-	IsDefault   bool            // Flag indicating if this command is the default one.
 }
