@@ -79,7 +79,7 @@ func TestRun(t *testing.T) {
 			version: "1.0.0",
 			want:    "Chassis\n\n  Version: 1.0.0\n\n",
 		},
-		"The commands and printed (and sorted) when they are defined.": {
+		"The commands are printed (and sorted) when they are defined.": {
 			commands: []chassis.Command{
 				{
 					Name:        "version",
