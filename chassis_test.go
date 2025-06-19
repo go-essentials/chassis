@@ -154,7 +154,7 @@ func TestRun(t *testing.T) {
 			app.Run(&buf, tc.args)
 
 			// ASSERT.
-			assert.Equal(t, buf.String(), tc.want, "", "\n\n"+
+			assert.Equalf(t, buf.String(), tc.want, "\n\n"+
 				"UT Name:  %s\n"+
 				"\033[32mExpected: %s\033[0m\n"+
 				"\033[31mActual:   %s\033[0m\n\n", tcName, fmtOutput(tc.want), fmtOutput(buf.String()))
